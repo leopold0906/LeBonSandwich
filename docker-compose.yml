@@ -1,0 +1,56 @@
+version: '2.3'
+
+services:
+  api_front:
+    container_name: api.front
+    image: node:lts
+    env_file:
+      - ./services/.env
+    working_dir: /usr/src/app
+    volumes:
+      - ./services/api:/usr/src/app
+    ports:
+      - '8080:3000'
+    command: npm run watch
+    depends_on:
+      - db
+    links:
+      - db
+    networks:
+      - iut
+
+  db:
+    container_name: db
+    image: mariadb:latest
+    env_file:
+      - ./services/.env
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'pwd'
+      MYSQL_ROOT_PASSWORD: 'root'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - ./services/db:/var/lib/mysql
+      - ./tables.sql:/docker-entrypoint-initdb.d/1.sql
+      - ./datas.sql:/docker-entrypoint-initdb.d/2.sql
+    networks:
+      - iut
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    depends_on:
+      - db
+    ports:
+      - 8081:8080
+    networks:
+      - iut
+
+networks:
+  iut:
+    driver: bridge
