@@ -1,0 +1,4 @@
+*.idea
+services/bd
+*package-lock.json
+*node_modules
