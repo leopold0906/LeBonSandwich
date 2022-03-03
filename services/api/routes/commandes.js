@@ -1,6 +1,7 @@
 let express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
+const Joi = require('joi');
 const Connection = require("../config/connection");
 let router = express.Router();
 
@@ -31,53 +32,83 @@ router.post('/', function(req, res, next) { res.status(405).json({
 router.get('/:id', function(req, res, next) {
     res.setHeader('Content-Type', 'application/json;charset=utf-8');
 
-
-    /** Query Parametres **/
-    let items = '';
-    if(req.query['embed'] == 'items') {
-        let rqsItems = "SELECT id, libelle, tarif, quantite FROM item WHERE command_id='" + req.params.id + "'";
-
-        Connection.query(rqsItems, (error, result, fields) => {
-            //console.log(req.params.id);
-            if (!error) {
-                items = result;
-            }
-        });
-    }
+    /** Verify Token **/
+    let tkn = null;
+    if(req.query['token'] !== null ) if( req.query['token']!== '') tkn = req.query['token'];
+    if(req.get('X-lbs-token') !== null) if(req.get('X-lbs-token') !== '') tkn = req.get('X-lbs-token');
 
 
-    let rqs = "SELECT id, mail, nom, created_at, livraison, montant FROM commande WHERE id='"+req.params.id+"'";
-    Connection.query(rqs, (error, result, fields) => {
-        console.log(req.params.id);
-        if(error){
-            res.status(500).json({
-                "type": "error",
-                "error": "500",
-                "message": error,
-            });
-        } else {
-            if(result[0] == null){
-                res.status(404).json({
-                    "type": "error",
-                    "error": "404",
-                    "message": "ressource non disponible : "+req.params.id,
-                });
-            }
-            res.status(201).json({
-                "type": "ressource",
-                "commande": result,
-                "items": items,
-                "links": {
-                    "items": {
-                        "href": req.originalUrl+'/items'
-                    },
-                    "self": {
-                        "href": req.originalUrl
-                    },
+    if(verifyToken(req.params.id, tkn)){
+        /** Query Parametres **/
+        let items = '';
+        if(req.query['embed'] == 'items') {
+            let rqsItems = "SELECT id, libelle, tarif, quantite FROM item WHERE command_id='" + req.params.id + "'";
+
+            Connection.query(rqsItems, (error, result, fields) => {
+                //console.log(req.params.id);
+                if (!error) {
+                    items = result;
                 }
             });
         }
-    });
+
+
+        let rqs = "SELECT id, mail, nom, created_at, livraison, montant FROM commande WHERE id='"+req.params.id+"'";
+        Connection.query(rqs, (error, result, fields) => {
+            console.log(req.params.id);
+            if(error){
+                res.status(500).json({
+                    "type": "error",
+                    "error": "500",
+                    "message": error,
+                });
+            } else {
+                if(result[0] == null){
+                    res.status(404).json({
+                        "type": "error",
+                        "error": "404",
+                        "message": "ressource non disponible : "+req.params.id,
+                    });
+                }
+
+                if(req.query['embed'] == 'items') {
+                    res.status(201).json({
+                        "type": "ressource",
+                        "commande": result,
+                        "items": items,
+                        "links": {
+                            "items": {
+                                "href": req.originalUrl+'/items'
+                            },
+                            "self": {
+                                "href": req.originalUrl
+                            },
+                        }
+                    });
+                } else {
+                    res.status(201).json({
+                        "type": "ressource",
+                        "commande": result,
+                        "links": {
+                            "items": {
+                                "href": req.originalUrl+'/items'
+                            },
+                            "self": {
+                                "href": req.originalUrl
+                            },
+                        }
+                    });
+                }
+
+            }
+        });
+    } else {
+        res.status(404).json({
+            "type": "error",
+            "error": "404",
+            "message": "ressource non disponible : "+req.params.id,
+        });
+    }
 });
 router.put('/:id', function(req, res, next) {
     let body = req.body;
@@ -171,6 +202,14 @@ router.post('/create', function(req, res, next) {
                 "message": error,
             });
         } else {
+            /** Insert items **/
+            let montant = 0;
+            let items = req.body.items;
+            items.forEach((item) => {
+                montant += item.tarif;
+               let v = insertItem(item, uuid);
+            });
+
             res.setHeader('Content-Type', 'application/json;charset=utf-8');
             res.setHeader('Location', '/commandes/'+uuid);
             res.status(201).json({
@@ -180,7 +219,7 @@ router.post('/create', function(req, res, next) {
                     "date_livraison": date_livr+heure_livr,
                     "id": uuid,
                     "token": token,
-                    "montant": 0
+                    "montant": montant
                 }
             });
         }
@@ -192,7 +231,7 @@ router.post('/create', function(req, res, next) {
 
 
 function escapeHtml(text) {
-    var map = {
+    let map = {
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
@@ -201,6 +240,57 @@ function escapeHtml(text) {
     };
 
     return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+
+function verifyToken(uuid, token){
+    let rq = "SELECT token FROM commande WHERE id="+ uuid;
+    Connection.query(rq, (error, result, fields) => {
+        if(error){
+            return false;
+        } else {
+            if(token === result[0]){
+                return true;
+            } else {
+                return false
+            }
+        }
+    });
+}
+
+function insertItem(item, cmd_id){
+    let req = "INSERT INTO item('uri', 'libelle', 'tarif', 'quantite', 'command_id') VALUES("+ item.uri +", "+ item.libelle +", "+ item.q +", "+ item.tarif +", "+ cmd_id +")";
+    Connection.query(rq, (error, result, fields) => {
+       if(error){
+           return false;
+       } else {
+           return true;
+       }
+    });
+}
+
+
+function verifyDataCreate(data){
+
+    const schema = Joi.object().keys({
+        nom: ,
+        mail: ,
+        livraison: Joi.object().keys({
+            date: ,
+            heure: ,
+        }),
+        items: Joi.array().required(),
+    });
+
+
+    const res = Joi.validate(data, schema);
+    const { value, error } = result;
+    const valid = error == null;
+    if (!valid) {
+        return false
+    } else {
+        return true;
+    }
 }
 
 
