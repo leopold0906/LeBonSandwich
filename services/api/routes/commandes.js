@@ -184,46 +184,58 @@ router.get('/:id/items', function(req, res, next) {
 
 /** Création de commande **/
 router.post('/create', function(req, res, next) {
-    let nom = escapeHtml(req.body.nom);
-    let mail = escapeHtml(req.body.mail);
-    let date_livr = escapeHtml(req.body.livraison.date);
-    let heure_livr = escapeHtml(req.body.livraison.heure);
+    let body = req.body;
 
-    let uuid = uuidv4();
-    let token = jwt.sign({ foo: 'bar' }, uuid, { algorithm : 'RSA256' });
+    if(verifyDataCreate(body)){
 
-    let rqs = "INSERT INTO commande('id', 'created_at', 'updated_at', 'livraison', 'nom', 'mail', 'montant', 'token', 'status') VALUES("+ uuid +", NOW(), NOW(), "+ date_livr+heure_livr +", "+ nom +", "+ mail +", 0, "+ token +", 1)";
-    Connection.query(rqs, (error, result, fields) => {
-        //console.log(req.params.id);
-        if(error){
-            res.status(500).json({
-                "type": "error",
-                "error": "500",
-                "message": error,
-            });
-        } else {
-            /** Insert items **/
-            let montant = 0;
-            let items = req.body.items;
-            items.forEach((item) => {
-                montant += item.tarif;
-               let v = insertItem(item, uuid);
-            });
+        let nom = escapeHtml(req.body.nom);
+        let mail = escapeHtml(req.body.mail);
+        let date_livr = escapeHtml(req.body.livraison.date);
+        let heure_livr = escapeHtml(req.body.livraison.heure);
 
-            res.setHeader('Content-Type', 'application/json;charset=utf-8');
-            res.setHeader('Location', '/commandes/'+uuid);
-            res.status(201).json({
-                "commande": {
-                    "nom": nom,
-                    "mail": mail,
-                    "date_livraison": date_livr+heure_livr,
-                    "id": uuid,
-                    "token": token,
-                    "montant": montant
-                }
-            });
-        }
-    });
+        let uuid = uuidv4();
+        let token = jwt.sign({ foo: 'bar' }, uuid, { algorithm : 'RSA256' });
+
+        let rqs = "INSERT INTO commande('id', 'created_at', 'updated_at', 'livraison', 'nom', 'mail', 'montant', 'token', 'status') VALUES("+ uuid +", NOW(), NOW(), "+ date_livr+heure_livr +", "+ nom +", "+ mail +", 0, "+ token +", 1)";
+        Connection.query(rqs, (error, result, fields) => {
+            //console.log(req.params.id);
+            if(error){
+                res.status(500).json({
+                    "type": "error",
+                    "error": "500",
+                    "message": error,
+                });
+            } else {
+                /** Insert items **/
+                let montant = 0;
+                let items = req.body.items;
+                items.forEach((item) => {
+                    montant += item.tarif;
+                    let v = insertItem(item, uuid);
+                });
+
+                res.setHeader('Content-Type', 'application/json;charset=utf-8');
+                res.setHeader('Location', '/commandes/'+uuid);
+                res.status(201).json({
+                    "commande": {
+                        "nom": nom,
+                        "mail": mail,
+                        "date_livraison": date_livr+heure_livr,
+                        "id": uuid,
+                        "token": token,
+                        "montant": montant
+                    }
+                });
+            }
+        });
+
+    } else {
+        res.status(500).json({
+            "type": "error",
+            "error": "403",
+            "message": error,
+        });
+    }
 });
 
 
@@ -273,11 +285,11 @@ function insertItem(item, cmd_id){
 function verifyDataCreate(data){
 
     const schema = Joi.object().keys({
-        nom: ,
-        mail: ,
+        nom: Joi.string().min(1).pattern(/^[a-zA-Z]+/).required(),
+        mail: Joi.string().email().required(),
         livraison: Joi.object().keys({
-            date: ,
-            heure: ,
+            date: Joi.date().greater('now').required(),
+            heure: Joi.string().pattern(/^[0-9]{2}:{1}[0-9]{2}$/).required(),
         }),
         items: Joi.array().required(),
     });
