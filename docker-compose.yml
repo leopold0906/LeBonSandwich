@@ -19,6 +19,25 @@ services:
     networks:
       - iut
 
+  api_backoffice:
+    container_name: api.backoffice
+    image: node:lts
+    env_file:
+      - ./services/.env
+    working_dir: /usr/src/app
+    volumes:
+      - ./services/api_backoffice:/usr/src/app
+    ports:
+      - '8081:3000'
+    command: npm run watch
+    depends_on:
+      - db
+    links:
+      - db
+      - api_front
+    networks:
+      - iut
+
   db:
     container_name: db
     image: mariadb:latest
@@ -47,7 +66,7 @@ services:
     depends_on:
       - db
     ports:
-      - 8081:8080
+      - 5000:8080
     networks:
       - iut
 

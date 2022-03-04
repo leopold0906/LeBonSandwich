@@ -272,7 +272,7 @@ function verifyToken(uuid, token){
 
 function insertItem(item, cmd_id){
     let req = "INSERT INTO item('uri', 'libelle', 'tarif', 'quantite', 'command_id') VALUES("+ item.uri +", "+ item.libelle +", "+ item.q +", "+ item.tarif +", "+ cmd_id +")";
-    Connection.query(rq, (error, result, fields) => {
+    Connection.query(req, (error, result, fields) => {
        if(error){
            return false;
        } else {
