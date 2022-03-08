@@ -66,10 +66,18 @@ router.get('/', function(req, res, next){
 
                cmds = cmds.slice(idd, idf);
 
+               let prev = parseInt(pag-1);
+               let next = parseInt(pag+1);
+               let lastPage = Math.ceil(result.length/size);
+
                let prevPage = 1;
-               let test = parseInt(pag-1);
-               if(test > 0){
-                   prevPage = test;
+               if(prev > 0){
+                   prevPage = prev;
+               }
+
+               let nextPage = 1;
+               if(next <= lastPage){
+                   nextPage = next;
                }
 
                res.status(203).json({
@@ -78,13 +86,13 @@ router.get('/', function(req, res, next){
                    "size": size,
                    "links": {
                        "next": {
-                           "href": "/commandes/?page="+ parseInt(pag+1) +"&size="+ size
+                           "href": "/commandes/?page="+ nextPage +"&size="+ size
                        },
                        "prev": {
                            "href": "/commandes/?page="+ prevPage +"&size="+ size
                        },
                        "last": {
-                           "href": "/commandes/?page="+ Math.ceil(result.length/size) +"&size="+ size
+                           "href": "/commandes/?page="+ lastPage +"&size="+ size
                        },
                        "first": {
                            "href": "/commandes/?page=1&size="+ size
