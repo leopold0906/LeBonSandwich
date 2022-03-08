@@ -65,29 +65,39 @@ router.get('/', function(req, res, next){
 
 
                cmds = cmds.slice(idd, idf);
+
+               res.status(203).json({
+                   "type": "collection",
+                   "count": result.length,
+                   "size": size,
+                   "links": {
+                       "next": {
+                           "href": "/commandes/?page="+ parseInt(pag+1) +"&size="+ size
+                       },
+                       "prev": {
+                           "href": "/commandes/?page="+ parseInt(pag-1) +"&size="+ size
+                       },
+                       "last": {
+                           "href": "/commandes/?page="+ Math.ceil(result.length/size) +"&size="+ size
+                       },
+                       "first": {
+                           "href": "/commandes/?page=1&size="+ size
+                       }
+                   },
+                   "commandes": cmds
+               });
+           }
+            else {
+               res.status(203).json({
+                   "type": "collection",
+                   "count": result.length,
+                   "size": size,
+                   "commandes": cmds
+               });
            }
 
 
-           res.status(203).json({
-               "type": "collection",
-               "count": result.length,
-               "size": size,
-               "links": {
-                   "next": {
-                       "href": "/commandes/?page="+ req.query['page']+1 +"&size="+ size
-                   },
-                   "prev": {
-                       "href": "/commandes/?page="+ req.query['page']-1 +"&size="+ size
-                   },
-                   "last": {
-                       "href": "/commandes/?page="+ Math.ceil(result.length/size) +"&size="+ size
-                   },
-                   "first": {
-                       "href": "/commandes/?page=1&size="+ size
-                   }
-               },
-               "commandes": cmds
-           });
+
        }
     });
 });
