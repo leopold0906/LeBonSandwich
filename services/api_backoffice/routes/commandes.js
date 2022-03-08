@@ -66,6 +66,12 @@ router.get('/', function(req, res, next){
 
                cmds = cmds.slice(idd, idf);
 
+               let prevPage = 1;
+               let test = parseInt(pag-1);
+               if(test > 0){
+                   prevPage = test;
+               }
+
                res.status(203).json({
                    "type": "collection",
                    "count": result.length,
@@ -75,7 +81,7 @@ router.get('/', function(req, res, next){
                            "href": "/commandes/?page="+ parseInt(pag+1) +"&size="+ size
                        },
                        "prev": {
-                           "href": "/commandes/?page="+ parseInt(pag-1) +"&size="+ size
+                           "href": "/commandes/?page="+ prevPage +"&size="+ size
                        },
                        "last": {
                            "href": "/commandes/?page="+ Math.ceil(result.length/size) +"&size="+ size
