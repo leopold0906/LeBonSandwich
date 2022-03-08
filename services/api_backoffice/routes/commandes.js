@@ -38,26 +38,31 @@ router.get('/', function(req, res, next){
               cmds.push(json);
            });
 
+           let size = 10;
+
            /** Pagination  **/
            if(req.query['page']!==null && req.query['page']!==undefined){
-               let pag = req.query['page'];
+               let pag = parseInt(req.query['page']);
                let idd, idf;
 
+               /** Size **/
+               if(req.query['size'] !== null && req.query['size'] !== undefined)
+                   size = parseInt(req.query['size']);
+
                if(pag < 1) pag = 1;
-               if((pag * 10) >= cmds.length){
-                   if(cmds.length > 10) {
-                        idd = cmds.length - 11;
+               if((pag * size) >= cmds.length){
+                   if(cmds.length > size) {
+                        idd = cmds.length -size -1;
                         idf = cmds.length - 1;
                    } else {
                        idd = 0;
                        idf = cmds.length - 1;
                    }
                } else {
-                   idd = pag*10 - 10;
-                   idf = pag*10 - 1;
+                   idd = pag*size - size;
+                   idf = pag*size;
                }
 
-               /**
 
                cmds = cmds.slice(idd, idf);
            }
@@ -66,7 +71,7 @@ router.get('/', function(req, res, next){
            res.status(203).json({
                "type": "collection",
                "count": result.length,
-               "size": 10,
+               "size": size,
                "commandes": cmds
            });
        }
