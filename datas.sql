@@ -16,7 +16,16 @@ INSERT INTO `commande` (`id`, `created_at`, `updated_at`, `livraison`, `nom`, `m
 ('dd0c77af-5782-4821-bda1-e65be1a99024',	'2019-11-08 13:45:55',	'2019-11-08 13:45:55',	'2019-11-08 21:22:33',	'Leger',	'Leger@live.com',	35.25,	NULL,	'21609badd6eaa44764a413fe526034d2115163a1ed313e4de67c4fee0c9ca50a',	NULL,	'59929b45c85dcbfcbc8e8f5d426fe43ca44cdcdff8a10a5405b065bf1e82d7a0eff93824842c3a3fac79baac3e5cd8da',	NULL,	NULL,	3),
 ('50c28c40-f305-43a4-8184-be3626644d95',	'2019-11-08 13:45:55',	'2019-11-08 13:45:56',	'2019-11-10 01:18:14',	'Delahaye',	'Delahaye@hotmail.fr',	43.25,	NULL,	'37272c4693c69672fabae16ce7b830d1fb6c1d40af3fb5f16c32771fbc530aa7',	NULL,	'980b01c12f2c144abb6aac4a1db50b449f2a59350d2f05757c14c87de800e57634dcb7b4e812b25b67d1eb35ee8b1a6a',	NULL,	NULL,	2),
 ('6d90caa2-b74a-4575-9b8a-bf237306d48b',	'2019-11-08 13:45:56',	'2019-11-08 13:45:56',	'2019-11-10 22:51:31',	'Roussel',	'Roussel@ifrance.com',	42.00,	NULL,	'1942de0de15222d581f5081fa432ce3825113c4105a284b344c9f106ca44a55c',	NULL,	NULL,	NULL,	NULL,	1),
-('06d23c7f-3a7d-4499-b7f1-0bb53ae40495',	'2019-11-08 13:45:56',	'2019-11-08 13:45:56',	'2019-11-09 13:06:06',	'Collet',	'Collet@tiscali.fr',	5.75,	NULL,	'ec6b9ef90e6dec5948841cfd3cacf14427a9ca3fde2cd4d5ecbb125682633730',	NULL,	NULL,	NULL,	NULL,	1);
+('06d23c7f-3a7d-4499-b7f1-0bb53ae40495',	'2019-11-08 13:45:56',	'2019-11-08 13:45:56',	'2019-11-09 13:06:06',	'Collet',	'Collet@tiscali.fr',	5.75,	NULL,	'ec6b9ef90e6dec5948841cfd3cacf14427a9ca3fde2cd4d5ecbb125682633730',	NULL,	NULL,	NULL,	NULL,	1),
+('90d23c7a-3afd-4989-12f1-0bda3ae41295',	'2019-11-08 13:45:56',	'2019-11-08 13:45:56',	'2019-11-06 13:34:12',	'Robert',	'Robert@tiscali.fr',	12.54,	NULL,	'ef4b9ef90e6dec5948841afd3cacf14427a9ca3fde2fd4d5ecbb125681233730',	NULL,	NULL,	NULL,	NULL,	1),
+('3f423c7a-389d-b9a9-1191-0bda3ae4a495',	'2019-11-08 13:45:56',	'2019-11-08 13:45:56',	'2019-11-12 14:12:09',	'Corneille',	'Corneille@tiscali.fr',	54.89,	NULL,	'83eb9ef90e6dec5438841afd3cacf144a4a9ca3fde2fdae5ecbb125681233730',	NULL,	NULL,	NULL,	NULL,	1),
+('75c23c7a-389d-b9b9-4191-0b543ae4a495',	'2019-11-08 13:45:56',	'2019-11-08 13:45:56',	'2019-11-10 15:56:54',	'Bouille',	'Bouille@tiscali.fr',	1.34,	NULL,	'8abb9ef90e6dec5438841afd3cacf144a4a9ca3fde2fdae5ecbb125681233730',	NULL,	NULL,	NULL,	NULL,	1),
+('ea17a-389d-b9b9-4191-0b543ae4a495',	'2019-11-08 13:45:56',	'2019-11-08 13:45:56',	'2019-11-09 12:54:38',	'Yordle',	'Yordle@tiscali.fr',	1.34,	NULL,	'9e2b9ef90e6dec5438841afd3cacf144a4a9ca3fde2fdae5ecbb125681233730',	NULL,	NULL,	NULL,	NULL,	1),
+('ac523c7a-389d-b9b9-4191-0b543ae4a495',	'2019-11-08 13:45:56',	'2019-11-08 13:45:56',	'2019-11-22 17:14:42',	'Patoche',	'Patoche@tiscali.fr',	1.34,	NULL,	'6cab9ef90e6dec5438841afd3cacf144a4a9ca3fde2fdae5ecbb125681233730',	NULL,	NULL,	NULL,	NULL,	1);
+
+
+
+
 
 INSERT INTO `item` (`id`, `uri`, `libelle`, `tarif`, `quantite`, `command_id`) VALUES
 (3012,	'/sandwichs/s19005',	'la mer',	5.25,	2,	'cdf6302b-940b-4348-b913-3cb2052bf042'),
