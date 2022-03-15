@@ -47,7 +47,7 @@ services:
     volumes:
       - ./services/api_auth:/usr/src/app
     ports:
-      - '8080:3000'
+      - '3333:3000'
     command: npm run watch
     depends_on:
       - db
