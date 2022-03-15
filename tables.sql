@@ -5,8 +5,8 @@ SET time_zone = '+00:00';
 SET foreign_key_checks = 0;
 SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
-DROP TABLE IF EXISTS `client`;
-CREATE TABLE `client` (
+DROP TABLE IF EXISTS `db`.`client`;
+CREATE TABLE `db`.`client` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nom_client` varchar(128) NOT NULL,
   `mail_client` varchar(256) NOT NULL,
@@ -18,8 +18,8 @@ CREATE TABLE `client` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `commande`;
-CREATE TABLE `commande` (
+DROP TABLE IF EXISTS `db`.`commande`;
+CREATE TABLE `db`.`commande` (
   `id` varchar(128) NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime DEFAULT NULL,
@@ -37,8 +37,8 @@ CREATE TABLE `commande` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `item`;
-CREATE TABLE `item` (
+DROP TABLE IF EXISTS `db`.`item`;
+CREATE TABLE `db`.`item` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `uri` varchar(128) NOT NULL,
   `libelle` varchar(128) DEFAULT NULL,

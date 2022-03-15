@@ -1,8 +1,8 @@
 version: '2.3'
 
 services:
-  api_front:
-    container_name: api.front
+  api_prs-cmd:
+    container_name: api.prs-cmd
     image: node:lts
     env_file:
       - ./services/.env
@@ -10,7 +10,7 @@ services:
     volumes:
       - ./services/api:/usr/src/app
     ports:
-      - '8080:3000'
+      - '5554:3000'
     command: npm run watch
     depends_on:
       - db
@@ -19,8 +19,8 @@ services:
     networks:
       - iut
 
-  api_backoffice:
-    container_name: api.backoffice
+  api_sv-cmd:
+    container_name: api.sv-cmd
     image: node:lts
     env_file:
       - ./services/.env
@@ -28,13 +28,31 @@ services:
     volumes:
       - ./services/api_backoffice:/usr/src/app
     ports:
-      - '8081:3000'
+      - '5555:3000'
     command: npm run watch
     depends_on:
       - db
     links:
       - db
-      - api_front
+      - api_prs-cmd
+    networks:
+      - iut
+
+  api_auth:
+    container_name: api.auth
+    image: node:lts
+    env_file:
+      - ./services/.env
+    working_dir: /usr/src/app
+    volumes:
+      - ./services/api_auth:/usr/src/app
+    ports:
+      - '8080:3000'
+    command: npm run watch
+    depends_on:
+      - db
+    links:
+      - db
     networks:
       - iut
 
@@ -55,6 +73,7 @@ services:
       - '3306'
     volumes:
       - ./services/db:/var/lib/mysql
+      - ./init_db-users.sql:/docker-entrypoint-initdb.d/0.sql
       - ./tables.sql:/docker-entrypoint-initdb.d/1.sql
       - ./datas.sql:/docker-entrypoint-initdb.d/2.sql
     networks:
