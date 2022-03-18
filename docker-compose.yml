@@ -13,11 +13,11 @@ services:
       - '5554:3000'
     command: npm run watch
     depends_on:
-      - db
+      - database
     links:
-      - db
+      - database
     networks:
-      - iut
+      - directus
 
   api_sv-cmd:
     container_name: api.sv-cmd
@@ -31,12 +31,12 @@ services:
       - '5555:3000'
     command: npm run watch
     depends_on:
-      - db
+      - database
     links:
-      - db
+      - database
       - api_prs-cmd
     networks:
-      - iut
+      - directus
 
   api_auth:
     container_name: api.auth
@@ -50,44 +50,21 @@ services:
       - '3333:3000'
     command: npm run watch
     depends_on:
-      - db
+      - database
     links:
-      - db
+      - database
     networks:
-      - iut
-
-  db:
-    container_name: db
-    image: mariadb:latest
-    env_file:
-      - ./services/.env
-    restart: always
-    environment:
-      MYSQL_DATABASE: 'db'
-      MYSQL_USER: 'user'
-      MYSQL_PASSWORD: 'pwd'
-      MYSQL_ROOT_PASSWORD: 'root'
-    ports:
-      - '3300:3300'
-    expose:
-      - '3300'
-    volumes:
-      - ./services/db:/var/lib/mysql
-      - ./init_db-users.sql:/docker-entrypoint-initdb.d/0.sql
-      - ./tables.sql:/docker-entrypoint-initdb.d/1.sql
-      - ./datas.sql:/docker-entrypoint-initdb.d/2.sql
-    networks:
-      - iut
+      - directus
 
   adminer:
     container_name: adminer
     image: adminer
     depends_on:
-      - db
+      - database
     ports:
       - '5000:8080'
     networks:
-      - iut
+      - directus
 
   database:
     container_name: database
