@@ -6,8 +6,6 @@ const Joi = require('joi');
 const Connection = require("../config/connection");
 let router = express.Router();
 
-const {checkToken, addToken} = require("../config/token");
-
 /* GET users listing. */
 router.get('/', function(req, res, next) {
     res.setHeader('Content-Type', 'application/json;charset=utf-8');
@@ -28,9 +26,9 @@ router.post('/signin', function(req, res, next) {
     let pwd = req.body.pwd;
     let user = null;
 
-    Connection.query("SELECT * FROM admin WHERE login="+login, (error, result, fields) => {
+    Connection.query("SELECT * FROM admin WHERE login="+"'"+login+"'", (error, result, fields) => {
         if(error){
-            res.status(500).json(error500(error));
+            res.status(500).json(error500(error+' '+login+' '+pwd));
         } else {
             if(result[0] !== null && result[0] !== undefined){
 
@@ -51,9 +49,9 @@ router.post('/signin', function(req, res, next) {
 
             } else {
 
-                Connection.query("SELECT * FROM admin WHERE nom_client="+login, (error, result, fields) => {
+                Connection.query("SELECT * FROM client WHERE nom_client="+"'"+login+"'", (error, result, fields) => {
                     if(error){
-                        res.status(500).json(error500(error));
+                        res.status(500).json(error500(error+' '+login+' '+pwd));
                     } else {
                         if(result[0] !== null && result[0] !== undefined){
 
@@ -79,6 +77,13 @@ router.post('/signin', function(req, res, next) {
                 });
             }
         }
+    });
+});
+router.get('/signin', function(req, res, next) {
+    res.status(405).json({
+        "type": "error",
+        "error": "405",
+        "message": "Méthode non autorisée pour cette URL"
     });
 });
 

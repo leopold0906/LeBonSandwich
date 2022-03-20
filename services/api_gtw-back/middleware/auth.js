@@ -1,7 +1,8 @@
 const axios = require('axios');
 
 module.exports = function(req, res, next){
-    if(req.url === '/auth/signin' || req.url === '/auth/signup'){
+    console.log(req.url);
+    if(req.url !== '/auth/signin' && req.url !== '/auth/signup'){
 
         if(typeof req.headers.authorization !== undefined){
             let token = req.headers.authorization.split(' ')[1];
@@ -23,7 +24,7 @@ module.exports = function(req, res, next){
                     }
                 })
                 .catch(error => {
-                   res.status(500).json({'error': 'Internal Server Error, api auth'});
+                   res.status(500).json({error});
                 });
 
         } else res.status(500).json({'error': "Not Authorized"});

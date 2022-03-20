@@ -19,7 +19,7 @@ CREATE TABLE `users`.`admin` (
 
 DROP TABLE IF EXISTS `users`.`client`;
 CREATE TABLE `users`.`client` (
-                               `uuid` varchar(36) NOT NULL AUTO_INCREMENT,
+                               `uuid` varchar(36) NOT NULL,
                                `nom_client` varchar(128) NOT NULL,
                                `mail_client` varchar(256) NOT NULL,
                                `passwd` varchar(256) NOT NULL,
