@@ -27,9 +27,9 @@ router.post('/signin', function(req, res, next) {
 
 
         axios
-            .post('http://localhost:3333/auth/signin', {
+            .post('http://api_auth:3000/auth/signin', {
                 'login': login,
-                'pswwd': pswwd
+                'pswwd': pswwd,
             },
                 {
                     headers: {
@@ -42,7 +42,10 @@ router.post('/signin', function(req, res, next) {
                 res.send(result);
             })
             .catch(error => {
-                res.status(500).json(error500(error));
+                if(error.response)
+                    res.status(error.response.status).json(error.response.data);
+                else
+                    res.status(500).json(error);
             });
     } else {
         res.status(401).json(error401('Missing credential'));

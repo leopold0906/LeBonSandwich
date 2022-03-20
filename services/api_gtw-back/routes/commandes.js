@@ -3,9 +3,9 @@ let router = express.Router();
 let axios = require('axios');
 
 router.get('/', function(req, res, next){
-
+    console.log(req.url);
     axios
-        .get('http://localhost:5554'+req.url, {
+        .get('http://api_sv-cmd:3000'+req.url, {
           body: req.body
         })
         .then(result => {

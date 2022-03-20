@@ -13,11 +13,11 @@ services:
       - '5554:3000'
     command: npm run watch
     depends_on:
-      - database
+      - db
     links:
-      - database
+      - db
     networks:
-      - directus
+      - iut
 
   api_sv-cmd:
     container_name: api.sv-cmd
@@ -31,12 +31,11 @@ services:
       - '5555:3000'
     command: npm run watch
     depends_on:
-      - database
+      - db
     links:
-      - database
-      - api_prs-cmd
+      - db
     networks:
-      - directus
+      - iut
 
   api_auth:
     container_name: api.auth
@@ -50,11 +49,56 @@ services:
       - '3333:3000'
     command: npm run watch
     depends_on:
-      - database
+      - db
     links:
-      - database
+      - db
     networks:
-      - directus
+      - iut
+
+  api_gtw-back:
+    container_name: api.gtw-back
+    image: node:lts
+    env_file:
+      - ./services/.env
+    working_dir: /usr/src/app
+    volumes:
+      - ./services/api_gtw-back:/usr/src/app
+    ports:
+      - '8081:3000'
+    command: npm run watch
+    depends_on:
+      - db
+      - api_auth
+      - api_sv-cmd
+    links:
+      - db
+      - api_auth
+      - api_sv-cmd
+    networks:
+      - iut
+
+  db:
+    container_name: db
+    image: mariadb:latest
+    env_file:
+      - ./services/.env
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'pwd'
+      MYSQL_ROOT_PASSWORD: 'root'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - ./services/db:/var/lib/mysql
+      - ./tables.sql:/docker-entrypoint-initdb.d/1.sql
+      - ./datas.sql:/docker-entrypoint-initdb.d/2.sql
+      - ./init_db-users.sql:/docker-entrypoint-initdb.d/3.sql
+    networks:
+      - iut
 
   adminer:
     container_name: adminer
@@ -64,19 +108,19 @@ services:
     ports:
       - '5000:8080'
     networks:
-      - directus
+      - iut
 
   database:
     container_name: database
     image: postgres
     volumes:
-      - ./data/database:/var/lib/postgresql/data
+      - ./services/db_catalogue:/var/lib/postgresql/data
     networks:
       - directus
     environment:
       POSTGRES_USER: 'directus'
       POSTGRES_PASSWORD: 'directus'
-      POSTGRES_DB: 'directus'
+      POSTGRES_DB: 'catalogue'
 
   cache:
     container_name: cache
@@ -93,7 +137,7 @@ services:
         # By default, uploads are stored in /directus/uploads
         # Always make sure your volumes matches the storage root when using
         # local driver
-        - ./uploads:/directus/uploads
+        - ./services/directus/uploads:/directus/uploads
         # Make sure to also mount the volume when using SQLite
         # - ./database:/directus/database
         # If you want to load extensions from the host
@@ -110,7 +154,7 @@ services:
         DB_CLIENT: 'pg'
         DB_HOST: 'database'
         DB_PORT: '5432'
-        DB_DATABASE: 'directus'
+        DB_DATABASE: 'catalogue'
         DB_USER: 'directus'
         DB_PASSWORD: 'directus'
 
@@ -128,4 +172,4 @@ services:
 networks:
   directus:
   iut:
-    driver: bridge
+  #  driver: bridge

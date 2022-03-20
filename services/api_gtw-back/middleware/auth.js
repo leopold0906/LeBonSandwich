@@ -1,14 +1,16 @@
 const axios = require('axios');
 
 module.exports = function(req, res, next){
-    console.log(req.url);
-    if(req.url !== '/auth/signin' && req.url !== '/auth/signup'){
 
-        if(typeof req.headers.authorization !== undefined){
+    let test = req.url.split('/');
+
+    if((req.url !== '/auth/signin' && req.url !== '/auth/signup') && (test[0]==='commandes' || test[0]==='auth')){
+
+        if(typeof req.headers.authorization !== undefined && typeof req.headers.authorization !== null){
             let token = req.headers.authorization.split(' ')[1];
 
             axios
-                .post('http://localhost:3333/auth/check', {
+                .post('http://api_auth:3000/auth/check', {
                     body: {
                         'token': token
                     }
@@ -24,7 +26,11 @@ module.exports = function(req, res, next){
                     }
                 })
                 .catch(error => {
-                   res.status(500).json({error});
+                    next();
+                    if(error.response)
+                        res.status(error.response.status).json(error.response.data);
+                    else
+                        res.status(500).json(error);
                 });
 
         } else res.status(500).json({'error': "Not Authorized"});
