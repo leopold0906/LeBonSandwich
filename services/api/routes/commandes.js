@@ -5,7 +5,7 @@ const Joi = require('joi');
 const Connection = require("../config/connection");
 let router = express.Router();
 
-/* GET users listing. */
+/* GET toutes les commandes */
 router.get('/', function(req, res, next) {
     res.setHeader('Content-Type', 'application/json;charset=utf-8');
 
@@ -17,7 +17,7 @@ router.get('/', function(req, res, next) {
                 "message": error,
             });
         } else {
-            res.status(201).json(result);
+            res.status(200).json(result);
         }
     });
 });
@@ -28,87 +28,104 @@ router.post('/', function(req, res, next) { res.status(405).json({
 }); });
 
 
-/* GET user by id */
+/* GET commandes by id and token */
 router.get('/:id', function(req, res, next) {
     res.setHeader('Content-Type', 'application/json;charset=utf-8');
 
     /** Verify Token **/
     let tkn = null;
-    if(req.query['token'] !== null ) if( req.query['token']!== '') tkn = req.query['token'];
-    if(req.get('X-lbs-token') !== null) if(req.get('X-lbs-token') !== '') tkn = req.get('X-lbs-token');
+    if(req.query['token'] !== null && req.query['token'] !== undefined) tkn = req.query['token'];
+    if(req.get('X-lbs-token') !== null) if(req.get('X-lbs-token') !== undefined) tkn = req.get('X-lbs-token');
 
-
-    if(verifyToken(req.params.id, tkn)){
-        /** Query Parametres **/
-        let items = '';
-        if(req.query['embed'] == 'items') {
-            let rqsItems = "SELECT id, libelle, tarif, quantite FROM item WHERE command_id='" + req.params.id + "'";
-
-            Connection.query(rqsItems, (error, result, fields) => {
-                //console.log(req.params.id);
-                if (!error) {
-                    items = result;
-                }
+    /** Vérifie le token de la commande */
+    let rq = "SELECT token FROM commande WHERE id='"+ req.params.id + "'";
+    Connection.query(rq, (error, result, fields) => {
+        if(error){
+            res.status(500).json({
+                "type": "error",
+                "error": "500",
+                "message": error,
             });
-        }
+        } else {
+            if(tkn === result[0].token){
 
+                /** Récupère les items de la commande **/
+                let items = '';
 
-        let rqs = "SELECT id, mail, nom, created_at, livraison, montant FROM commande WHERE id='"+req.params.id+"'";
-        Connection.query(rqs, (error, result, fields) => {
-            console.log(req.params.id);
-            if(error){
-                res.status(500).json({
-                    "type": "error",
-                    "error": "500",
-                    "message": error,
-                });
+                    let rqsItems = "SELECT id, libelle, tarif, quantite FROM item WHERE command_id='" + req.params.id + "'";
+                    Connection.query(rqsItems, (error, result, fields) => {
+                        if (!error) {
+                            items = result;
+
+                            /** Récupère les infos de la commande */
+                            let rqs = "SELECT id, mail, nom, created_at, livraison, montant FROM commande WHERE id='"+req.params.id+"'";
+                            Connection.query(rqs, (error, result, fields) => {
+
+                                if(error){
+                                    res.status(500).json({
+                                        "type": "error",
+                                        "error": "500",
+                                        "message": error,
+                                    });
+                                } else {
+                                    if(result[0] == null){
+                                        res.status(404).json({
+                                            "type": "error",
+                                            "error": "404",
+                                            "message": "ressource non disponible : "+req.params.id,
+                                        });
+                                    }
+
+                                    if(req.query['embed'] == 'items') {
+                                        res.status(201).json({
+                                            "type": "ressource",
+                                            "commande": result,
+                                            "items": items,
+                                            "links": {
+                                                "items": {
+                                                    "href": req.originalUrl+'/items'
+                                                },
+                                                "self": {
+                                                    "href": req.originalUrl
+                                                },
+                                            }
+                                        });
+                                    } else {
+                                        res.status(201).json({
+                                            "type": "ressource",
+                                            "commande": result,
+                                            "links": {
+                                                "items": {
+                                                    "href": req.originalUrl+'/items'
+                                                },
+                                                "self": {
+                                                    "href": req.originalUrl
+                                                },
+                                            }
+                                        });
+                                    }
+
+                                }
+                            });
+
+                        } else {
+                            res.status(500).json({
+                                "type": "error",
+                                "error": "500",
+                                "message": error,
+                            });
+                        }
+                    });
+
             } else {
-                if(result[0] == null){
-                    res.status(404).json({
-                        "type": "error",
-                        "error": "404",
-                        "message": "ressource non disponible : "+req.params.id,
-                    });
-                }
-
-                if(req.query['embed'] == 'items') {
-                    res.status(201).json({
-                        "type": "ressource",
-                        "commande": result,
-                        "items": items,
-                        "links": {
-                            "items": {
-                                "href": req.originalUrl+'/items'
-                            },
-                            "self": {
-                                "href": req.originalUrl
-                            },
-                        }
-                    });
-                } else {
-                    res.status(201).json({
-                        "type": "ressource",
-                        "commande": result,
-                        "links": {
-                            "items": {
-                                "href": req.originalUrl+'/items'
-                            },
-                            "self": {
-                                "href": req.originalUrl
-                            },
-                        }
-                    });
-                }
-
+                res.status(404).json({
+                    "type": "error",
+                    "error": "404",
+                    "message": "Token non fournis dans l'url",
+                });
             }
-        });
-    } else {
-        res.status(404).json({
-            "type": "error",
-            "error": "404",
-            "message": "ressource non disponible : "+req.params.id,
-        });
-    }
+        }
+    });
 });
 router.put('/:id', function(req, res, next) {
     let body = req.body;
@@ -139,11 +156,6 @@ router.put('/:id', function(req, res, next) {
         });
     }
 });
-router.post('/:id', function(req, res, next) { res.status(405).json({
-    "type": "error",
-    "error": "405",
-    "message": "Méthode non autorisée pour cette URL"
-}); });
 
 
 
@@ -186,17 +198,33 @@ router.get('/:id/items', function(req, res, next) {
 router.post('/create', function(req, res, next) {
     let body = req.body;
 
-    if(verifyDataCreate(body)){
+    let nom = req.body.nom;
+    let mail = req.body.mail;
+    let livraison = JSON.parse(req.body.livraison);
+    let date_livr = livraison.date;
+    let heure_livr = livraison.heure;
+    let items = JSON.parse(req.body.items);
 
-        let nom = escapeHtml(req.body.nom);
-        let mail = escapeHtml(req.body.mail);
-        let date_livr = escapeHtml(req.body.livraison.date);
-        let heure_livr = escapeHtml(req.body.livraison.heure);
+    let date = dateToMysqlFormat(new Date(date_livr+" "+heure_livr+":00"));
+
+    let verif = {
+        'nom': nom,
+        'mail': mail,
+        'livraison': {
+            'date': date_livr,
+            'heure': heure_livr
+        },
+        'items': items
+    }
+
+
+    if(verifyDataCreate(verif)){
+
 
         let uuid = uuidv4();
-        let token = jwt.sign({ foo: 'bar' }, uuid, { algorithm : 'RSA256' });
+        let token = jwt.sign({ foo: 'bar' }, 'commande');
 
-        let rqs = "INSERT INTO commande('id', 'created_at', 'updated_at', 'livraison', 'nom', 'mail', 'montant', 'token', 'status') VALUES("+ uuid +", NOW(), NOW(), "+ date_livr+heure_livr +", "+ nom +", "+ mail +", 0, "+ token +", 1)";
+        let rqs = "INSERT INTO commande (`id`, `created_at`, `updated_at`, `livraison`, `nom`, `mail`, `montant`, `token`, `status`) VALUES ('"+ uuid +"', NOW(), NOW(), '"+ date +"', '"+ nom +"', '"+ mail +"', 0, '"+ token +"', 1)";
         Connection.query(rqs, (error, result, fields) => {
             //console.log(req.params.id);
             if(error){
@@ -208,32 +236,44 @@ router.post('/create', function(req, res, next) {
             } else {
                 /** Insert items **/
                 let montant = 0;
-                let items = req.body.items;
-                items.forEach((item) => {
-                    montant += item.tarif;
-                    let v = insertItem(item, uuid);
-                });
+                if(items!==undefined&&items.length!==0){
+                    items.forEach((item) => {
+                        montant += item.tarif;
+                        let v = insertItem(item, uuid);
+                    });
 
-                res.setHeader('Content-Type', 'application/json;charset=utf-8');
-                res.setHeader('Location', '/commandes/'+uuid);
-                res.status(201).json({
-                    "commande": {
-                        "nom": nom,
-                        "mail": mail,
-                        "date_livraison": date_livr+heure_livr,
-                        "id": uuid,
-                        "token": token,
-                        "montant": montant
-                    }
-                });
+                    res.setHeader('Content-Type', 'application/json;charset=utf-8');
+                    res.setHeader('Location', '/commandes/'+uuid);
+                    res.status(201).json({
+                        "commande": {
+                            "nom": nom,
+                            "mail": mail,
+                            "date_livraison": date_livr+heure_livr,
+                            "id": uuid,
+                            "token": token,
+                            "montant": montant
+                        }
+                    });
+                } else{
+                    res.status(201).json({
+                        "commande": {
+                            "nom": nom,
+                            "mail": mail,
+                            "date_livraison": date_livr+heure_livr,
+                            "id": uuid,
+                            "token": token,
+                            "montant": montant
+                        }
+                    });
+                }
             }
         });
 
     } else {
-        res.status(500).json({
+        res.status(403).json({
             "type": "error",
             "error": "403",
-            "message": error,
+            "message": "Les données sont fausses ou manquantes",
         });
     }
 });
@@ -255,20 +295,6 @@ function escapeHtml(text) {
 }
 
 
-function verifyToken(uuid, token){
-    let rq = "SELECT token FROM commande WHERE id="+ uuid;
-    Connection.query(rq, (error, result, fields) => {
-        if(error){
-            return false;
-        } else {
-            if(token === result[0]){
-                return true;
-            } else {
-                return false
-            }
-        }
-    });
-}
 
 function insertItem(item, cmd_id){
     let req = "INSERT INTO item('uri', 'libelle', 'tarif', 'quantite', 'command_id') VALUES("+ item.uri +", "+ item.libelle +", "+ item.q +", "+ item.tarif +", "+ cmd_id +")";
@@ -285,24 +311,29 @@ function insertItem(item, cmd_id){
 function verifyDataCreate(data){
 
     const schema = Joi.object().keys({
-        nom: Joi.string().min(1).pattern(/^[a-zA-Z]+/).required(),
+        nom: Joi.string().min(1).pattern(/^[a-zA-Z0-9]+/).required(),
         mail: Joi.string().email().required(),
         livraison: Joi.object().keys({
-            date: Joi.date().greater('now').required(),
-            heure: Joi.string().pattern(/^[0-9]{2}:{1}[0-9]{2}$/).required(),
+            date: Joi.string().required(),
+            heure: Joi.string().pattern(/^[0-9]{2}:{1}[0-9]{2}/).required(),
         }),
-        items: Joi.array().required(),
+        items: Joi.array(),
     });
 
 
-    const res = Joi.validate(data, schema);
-    const { value, error } = result;
+    const res = schema.validate(data);
+    const { value, error } = res;
     const valid = error == null;
     if (!valid) {
         return false
     } else {
         return true;
     }
+}
+
+
+function dateToMysqlFormat(date) {
+    return date.toISOString().slice(0, 19).replace('T', ' ');
 }
 
 

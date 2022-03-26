@@ -3,10 +3,11 @@ const axios = require('axios');
 module.exports = function(req, res, next){
 
     let test = req.url.split('/');
+    //console.log('test: '+test[1]);
 
-    if((req.url !== '/auth/signin' && req.url !== '/auth/signup') && (test[0]==='commandes' || test[0]==='auth')){
+    if((req.url !== '/auth/signin' && req.url !== '/auth/signup') && (test[1]==='commandes' || test[1]==='auth')){
 
-        if(typeof req.headers.authorization !== undefined && typeof req.headers.authorization !== null){
+        if((typeof req.headers.authorization !== undefined) && (typeof req.headers.authorization !== null)){
             let token = req.headers.authorization.split(' ')[1];
 
             axios
@@ -26,7 +27,6 @@ module.exports = function(req, res, next){
                     }
                 })
                 .catch(error => {
-                    next();
                     if(error.response)
                         res.status(error.response.status).json(error.response.data);
                     else

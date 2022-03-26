@@ -34,12 +34,12 @@ router.post('/signin', function(req, res, next) {
 
                 user = result[0];
 
-                bcrypt.compare(pwd, user.paswwd).then((res) => {
-                    if(res===true){
+                bcrypt.compare(pwd, user.paswwd).then((ok) => {
+                    if(ok){
 
                         let privateKey = fs.readFileSync('../jwt_secret.txt');
 
-                        let token = jwt.sign({sub: user.uuid}, privateKey, { algortihm: 'HS256', expiresIn: '1h' });
+                        let token = jwt.sign({sub: user.uuid}, privateKey, { algorithm: 'HS256', expiresIn: '1h' });
                         res.status(200).json({'token': token});
 
                     } else {
@@ -57,8 +57,8 @@ router.post('/signin', function(req, res, next) {
 
                             user = result[0];
 
-                            bcrypt.compare(pwd, user.paswwd).then((res) => {
-                                if(res===true){
+                            bcrypt.compare(pwd, user.paswwd).then((ok) => {
+                                if(ok){
 
                                     let privateKey = fs.readFileSync('../jwt_secret.txt');
 

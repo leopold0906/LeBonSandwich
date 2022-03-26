@@ -27,12 +27,10 @@ app.use('*', function(req, res, next){
     "message": "L'URL suivante n'est pas correct : "+req.protocol + '://' + req.get('host') + req.originalUrl,
   });
 });
-
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
-
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
@@ -44,3 +42,4 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+

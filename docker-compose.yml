@@ -77,6 +77,26 @@ services:
     networks:
       - iut
 
+  api_gtw-front:
+    container_name: api.gtw-front
+    image: node:lts
+    env_file:
+      - ./services/.env
+    working_dir: /usr/src/app
+    volumes:
+      - ./services/api_gtw-front:/usr/src/app
+    ports:
+      - '8082:3000'
+    command: npm run watch
+    depends_on:
+      - directus
+      - api_prs-cmd
+    links:
+      - directus
+      - api_prs-cmd
+    networks:
+      - iut
+
   db:
     container_name: db
     image: mariadb:latest
